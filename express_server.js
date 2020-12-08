@@ -1,6 +1,6 @@
 const express = require ("express");
 const app = express();
-const PORT = 8080;
+const PORT = 3000;
 const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({extended: true}));
 app.set("view engine", "ejs");
@@ -11,6 +11,11 @@ const urlDatabase = {
 };
 app.listen(PORT,() => {
   console.log(`Example app listening on port ${PORT}!`);
+})
+
+app.get("/u/:shortURL", (req, res) => {
+  const longUrl = urlDatabase[req.params.shortURL];
+  res.redirect(longUrl);
 })
 
 app.get("/", (req, res) => {
@@ -32,8 +37,9 @@ app.get("/urls/:shortURL", (req, res) => {
 });
 
 app.post("/urls", (req, res) => {
-  console.log(req.body);  // Log the POST request body to the console
-  res.send("Ok");         // Respond with 'Ok' (we will replace this)
+  newKey = generateRandomString()
+  urlDatabase[newKey] = req.body.longURL;
+  res.redirect(`/urls/${newKey}`)
 });
 
 app.get("/urls.json", (req, res) => {
