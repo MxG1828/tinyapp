@@ -8,18 +8,26 @@
 </head>
 <body>
   <%- include('partials/_header') %>
-  <form class="form" action="/register" method="POST" style="text-align: center; margin-top: 10px;">
+  <div style="margin-top: 1em; margin-left: 1em;">
+    <h3>Create Account</h3>
+  <form class="form" action="/register" method="POST" >
     <div>
-      <label for="email">E-mail:</label>
-      <input type="email" name="email" placeholder="example@email.com">
+      <label  for="email">E-mail</label>
     </div>
     <div>
-      <label for="password">Password:</label>
-      <input type="password" name="password">
+      <input  type="email" name="email" placeholder="example@email.com">
+    </div>
+    <div>
+      <label for="password">Password</label>
+    </div>
+    <div>
+      <input type="password" name="password" placeholder="password">
     </div>
   
   
-  <button type="submit" class="btn btn-primary">Register</button>
+  <button style="margin-top: 0.5em;" type="submit" class="btn btn-primary">Register</button>
+  
+  </div>
   
   
   

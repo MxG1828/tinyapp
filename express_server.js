@@ -26,7 +26,6 @@ const users = {
 };
 const userExist = (email) => {
   for(let user in users) {
-    console.log (users[user].email)
     if (users[user].email === email) {
       return user;
     }
@@ -119,7 +118,7 @@ app.post("/urls", (req, res) => {
 
 app.post("/login", (req, res) => {
   let user = userExist(req.body.email);
-  if (users[user].password === req.body.password) {
+  if (user && users[user].password === req.body.password) {
     res.cookie("user_id", user).redirect("/urls");
   } else {
     res.status(403)

@@ -6,20 +6,30 @@
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
   <title>Register</title>
 </head>
+
 <body>
   <%- include('partials/_header') %>
-  <form class="form" action="/login" method="POST" style="text-align: center; margin-top: 10px;">
+  <div style="margin-left: 1em; margin-top: 1em;">
+    <h3>Login</h3>
+  <form class="form" action="/login" method="POST">
     <div>
-      <label for="email">E-mail:</label>
-      <input type="email" name="email" placeholder="example@email.com">
+      <label  for="email">E-mail</label>
     </div>
     <div>
-      <label for="password">Password:</label>
-      <input type="password" name="password">
+      <input  type="email" name="email" placeholder="example@email.com">
+    </div>
+    <div>
+      <label for="password">Password</label>
+    </div>
+    <div>
+      <input type="password" name="password" placeholder="password">
     </div>
   
   
-  <button type="submit" class="btn btn-primary">Login</button>
+  <button style="margin-top: 0.5em;" type="submit" class="btn btn-primary">Login</button>
+  </div>
+  
+  
   
   
   
