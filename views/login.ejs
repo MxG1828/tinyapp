@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
+  <title>Register</title>
+</head>
+<body>
+  <%- include('partials/_header') %>
+  <form class="form" action="/login" method="POST" style="text-align: center; margin-top: 10px;">
+    <div>
+      <label for="email">E-mail:</label>
+      <input type="email" name="email" placeholder="example@email.com">
+    </div>
+    <div>
+      <label for="password">Password:</label>
+      <input type="password" name="password">
+    </div>
+  
+  
+  <button type="submit" class="btn btn-primary">Login</button>
+  
+  
+  
+  </form>
+</body>
+</html>
