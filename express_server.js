@@ -5,7 +5,7 @@ const bodyParser = require("body-parser");
 //const cookieParser = require("cookie-parser");
 const bcrypt = require("bcrypt");
 const cookieSession = require("cookie-session");
-const { urlForUser, userExist, generateRandomString } = require("./helper.js")
+const { urlForUser, userExist, generateRandomString } = require("./helper.js");
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.set("view engine", "ejs");
@@ -16,7 +16,6 @@ app.use(
     keys: ["noKeyeah"],
   })
 );
-
 
 const users = {
   userRandomID: {
@@ -49,7 +48,7 @@ app.listen(PORT, () => {
 
 app.get("/", (req, res) => {
   if (users[req.session.user_id]) {
-    res.redirect("/urls")
+    res.redirect("/urls");
   } else {
     res.redirect("/login");
   }
@@ -57,12 +56,12 @@ app.get("/", (req, res) => {
 
 app.get("/urls", (req, res) => {
   const urls = urlForUser(req.session.user_id, urlDatabase);
-  if(!users[req.session.user_id]) {
-    error = "noLogin"
+  if (!users[req.session.user_id]) {
+    error = "noLogin";
   }
-  const templateVars = { user: users[req.session.user_id], urls, error};
-  if(error === "noLogin") {
-    return res.render("error", templateVars)
+  const templateVars = { user: users[req.session.user_id], urls, error };
+  if (error === "noLogin") {
+    return res.render("error", templateVars);
   }
   res.render("urls_index", templateVars);
 });
@@ -80,32 +79,31 @@ app.get("/urls/new", (req, res) => {
 
 app.get("/urls/:shortURL", (req, res) => {
   const sURL = req.params.shortURL;
-  const id = req.session.user_id
-  const templateVars = { user: users[req.session.user_id], shortURL: req.params.shortURL, error};
-  if(!users[req.session.user_id]){
+  const id = req.session.user_id;
+  const templateVars = { user: users[req.session.user_id], shortURL: req.params.shortURL, error };
+  if (!users[req.session.user_id]) {
     templateVars.error = "noLogin";
-    return res.render("error",templateVars);
+    return res.render("error", templateVars);
   }
-  if(!urlDatabase[sURL]){
-    templateVars.error = "noURL"
-    return res.render("error",templateVars);
+  if (!urlDatabase[sURL]) {
+    templateVars.error = "noURL";
+    return res.render("error", templateVars);
   }
   if (Object.keys(urlForUser(id, urlDatabase)).indexOf(sURL) === -1) {
-    templateVars.error = "noAccess"
-    return res.render("error",templateVars);
+    templateVars.error = "noAccess";
+    return res.render("error", templateVars);
   }
-  templateVars["longURL"] = urlDatabase[sURL].longURL
+  templateVars["longURL"] = urlDatabase[sURL].longURL;
   return res.render("urls_show", templateVars);
-
 });
 
 app.get("/u/:shortURL", (req, res) => {
-  if(!urlDatabase[req.params.shortURL]){
-    error = "noURL"
+  if (!urlDatabase[req.params.shortURL]) {
+    error = "noURL";
   }
   if (error === "noURL") {
-    const templateVars = {error, user: users[req.session.user_id]}
-    return res.render("error",templateVars)
+    const templateVars = { error, user: users[req.session.user_id] };
+    return res.render("error", templateVars);
   }
   const longURL = urlDatabase[req.params.shortURL].longURL;
   res.redirect(longURL);
@@ -113,24 +111,24 @@ app.get("/u/:shortURL", (req, res) => {
 
 app.post("/urls", (req, res) => {
   const newKey = generateRandomString();
-  urlDatabase[newKey] = { longURL: req.body.longURL, userId: req.session.user_id, error};
-  const templateVars = { user: users[req.session.user_id], error};
-  if(!users[req.session.user_id]){
+  urlDatabase[newKey] = { longURL: req.body.longURL, userId: req.session.user_id, error };
+  const templateVars = { user: users[req.session.user_id], error };
+  if (!users[req.session.user_id]) {
     templateVars.error = "noLogin";
-    return res.render("error",templateVars);
+    return res.render("error", templateVars);
   }
   res.redirect(`/urls/${newKey}`);
 });
 
 app.post("/urls/:id", (req, res) => {
-  const templateVars = {shortURL: req.params.id, error, user: users[req.session.user_id]}
-  if (Object.keys(urlForUser(req.session.user_id, urlDatabase)).indexOf(req.params.id) === -1) {
-    templateVars.error = "noAccess"
-    return res.render("error",templateVars);
-  }
-  if(!users[req.session.user_id]){
+  const templateVars = { shortURL: req.params.id, error, user: users[req.session.user_id] };
+  if (!users[req.session.user_id]) {
     templateVars.error = "noLogin";
-    return res.render("error",templateVars);
+    return res.render("error", templateVars);
+  }
+  if (Object.keys(urlForUser(req.session.user_id, urlDatabase)).indexOf(req.params.id) === -1) {
+    templateVars.error = "noAccess";
+    return res.render("error", templateVars);
   }
   if (!req.body.longURL) {
     return res.redirect("/urls");
@@ -139,73 +137,75 @@ app.post("/urls/:id", (req, res) => {
   res.redirect("/urls");
 });
 
+app.post("/urls/:shortURL/delete", (req, res) => {
+  const templateVars = { shortURL: req.params.shortURL, error, user: users[req.session.user_id] };
+  if (!users[req.session.user_id]) {
+    templateVars.error = "noLogin";
+    return res.render("error", templateVars);
+  }
+  if (Object.keys(urlForUser(req.session.user_id, urlDatabase)).indexOf(req.params.shortURL) === -1) {
+    templateVars.error = "noAccess";
+    return res.render("error", templateVars);
+  }
+  delete urlDatabase[req.params.shortURL];
+  res.redirect("/urls");
+});
+
 app.get("/login", (req, res) => {
   if (!users[req.session.user_id]) {
     const templateVars = {
-    user: users[req.session.user_id],
-  };
-  res.render("login", templateVars);
+      user: users[req.session.user_id],
+      error,
+    };
+    res.render("login", templateVars);
   } else {
-    res.redirect("/")
-  } 
+    res.redirect("/");
+  }
 });
 
 app.get("/register", (req, res) => {
-  const templateVars = {
-    user: users[req.session.user_id],
-  };
-  res.render("registration", templateVars);
+  if (!users[req.session.user_id]) {
+    const templateVars = {
+      user: users[req.session.user_id],
+    };
+    res.render("registration", templateVars);
+  } else {
+    res.redirect("/urls");
+  }
 });
 
 app.post("/login", (req, res) => {
   let user = userExist(req.body.email, users);
-  if (user && req.body.password) {
-    if (bcrypt.compareSync(req.body.password, users[user].hashed)) {
-      req.session.user_id = user;
-      res.redirect("/urls");
-    } else {
-      res.status(403);
-      res.send("incorrect email or password");
-    }
-  } else {
-    res.status(403);
-    res.send("incorrect email or password");
+  console.log(user);
+  if (!user || !req.body.password) {
+    templateVars.error = "incorrect";
+    return res.render("error", templateVars);
   }
+  if (!bcrypt.compareSync(req.body.password, users[user].hashed)) {
+    templateVars.error = "incorrect";
+    return res.render("error", templateVars);
+  }
+  req.session.user_id = user;
+  res.redirect("/urls");
 });
-
 
 app.post("/register", (req, res) => {
-  if (req.body.email && req.body.password && !userExist(req.body.email,users)) {
-    const idstr = generateRandomString();
-    users[idstr] = {
-      id: idstr,
-      email: req.body.email,
-      hashed: bcrypt.hashSync(req.body.password, 10),
-    };
-    req.session.user_id = idstr;
-    res.redirect("/urls");
-  } else {
-    res.status(400);
-    res.send("Error");
+  const templateVars = { user: users[req.session.user_id], error };
+  if (!req.body.email || !req.body.password) {
+    templateVars.error = "empty";
+    return res.render("error", templateVars);
   }
-});
-
-
-
-
-
-
-
-
-
-
-
-
-app.post("/urls/:shortURL/delete", (req, res) => {
-  if (!users[req.session.user_id] || Object.keys(urlForUser(req.session.user_id, urlDatabase)).indexOf(req.params.shortURL) === -1) {
-    return res.status(401).send("Unauthorized");
+  if (userExist(req.body.email, users)) {
+    templateVars.error = "exist";
+    return res.render("error", templateVars);
   }
-  delete urlDatabase[req.params.shortURL];
+  const idstr = generateRandomString();
+  users[idstr] = {
+    id: idstr,
+    email: req.body.email,
+    hashed: bcrypt.hashSync(req.body.password, 10),
+  };
+  req.session.user_id = idstr;
   res.redirect("/urls");
 });
 
@@ -213,9 +213,6 @@ app.post("/logout", (req, res) => {
   req.session = null;
   res.redirect("/urls");
 });
-
-
-
 
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);

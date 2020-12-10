@@ -18,6 +18,15 @@
    <% if (error === "noAccess") { %>
       <h4>Sorry, you do not have access to <%= shortURL %></h4>
    <% } %>
+   <% if (error === "incorrect") { %>
+      <h4>Incorrect e-mail or password. <a href="/login">try again</a></h4>
+   <% } %>
+   <% if (error === "empty") { %>
+      <h4>E-mail and password can not be empty</h4>
+   <% } %>
+   <% if (error === "exist") { %>
+      <h4>Email already exist. Try <a href="/login">login</a>?</h4>
+   <% } %>
   </div>
   
 </body>
