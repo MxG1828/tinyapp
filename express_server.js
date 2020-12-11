@@ -5,8 +5,9 @@ const bodyParser = require("body-parser");
 //const cookieParser = require("cookie-parser");
 const bcrypt = require("bcrypt");
 const cookieSession = require("cookie-session");
-const { urlForUser, userExist, generateRandomString } = require("./helper.js");
-
+const { urlForUser, userExist, generateRandomString } = require("./helper");
+const { users } = require("./data")
+const { urlDatabase } = require("./data")
 app.use(bodyParser.urlencoded({ extended: true }));
 app.set("view engine", "ejs");
 //app.use(cookieParser());
@@ -17,28 +18,6 @@ app.use(
   })
 );
 
-const users = {
-  userRandomID: {
-    id: "userRandomID",
-    email: "user@example.com",
-    hashed: bcrypt.hashSync("purple-monkey-dinosaur", 10),
-  },
-  test1: {
-    id: "test1",
-    email: "test1@test1.com",
-    hashed: bcrypt.hashSync("test1", 10),
-  },
-  test: {
-    id: "test",
-    email: "test@test.com",
-    hashed: bcrypt.hashSync("test", 10),
-  },
-};
-
-const urlDatabase = {
-  tester: { longURL: "http://www.lighthouselabs.ca", userId: "test" },
-  test2: { longURL: "http://www.google.com", userId: "test1" },
-};
 
 let error = null;
 
@@ -47,7 +26,7 @@ app.listen(PORT, () => {
 });
 
 app.get("/", (req, res) => {
-  if (users[req.session.user_id]) {
+  if (!!req.session.user_id) {
     res.redirect("/urls");
   } else {
     res.redirect("/login");
@@ -56,11 +35,9 @@ app.get("/", (req, res) => {
 
 app.get("/urls", (req, res) => {
   const urls = urlForUser(req.session.user_id, urlDatabase);
-  if (!users[req.session.user_id]) {
-    error = "noLogin";
-  }
   const templateVars = { user: users[req.session.user_id], urls, error };
-  if (error === "noLogin") {
+  if (!req.session.user_id) {
+    templateVars.error  = "noLogin"
     return res.render("error", templateVars);
   }
   res.render("urls_index", templateVars);
@@ -70,18 +47,18 @@ app.get("/urls/new", (req, res) => {
   const templateVars = {
     user: users[req.session.user_id],
   };
-  if (users[req.session.user_id]) {
-    res.render("urls_new", templateVars);
-  } else {
+  if (!req.session.user_id) {
     res.render("login", templateVars);
+  } else {
+    res.render("urls_new", templateVars);
   }
 });
 
 app.get("/urls/:shortURL", (req, res) => {
   const sURL = req.params.shortURL;
   const id = req.session.user_id;
-  const templateVars = { user: users[req.session.user_id], shortURL: req.params.shortURL, error };
-  if (!users[req.session.user_id]) {
+  const templateVars = { user: users[id], shortURL: sURL, error,};
+  if (!id) {
     templateVars.error = "noLogin";
     return res.render("error", templateVars);
   }
@@ -94,26 +71,37 @@ app.get("/urls/:shortURL", (req, res) => {
     return res.render("error", templateVars);
   }
   templateVars["longURL"] = urlDatabase[sURL].longURL;
+  templateVars["date"] = urlDatabase[sURL].date;
+  templateVars["visits"] = urlDatabase[sURL].visits;
+  templateVars["uniVisit"] = urlDatabase[sURL].uniVisit;
   return res.render("urls_show", templateVars);
 });
 
 app.get("/u/:shortURL", (req, res) => {
   if (!urlDatabase[req.params.shortURL]) {
     error = "noURL";
-  }
-  if (error === "noURL") {
     const templateVars = { error, user: users[req.session.user_id] };
     return res.render("error", templateVars);
   }
+  if(urlDatabase[req.params.shortURL].ipVisited.indexOf(req.ip) === -1) {
+    urlDatabase[req.params.shortURL].ipVisited.push(req.ip);
+    urlDatabase[req.params.shortURL].uniVisit += 1;
+  }
+  urlDatabase[req.params.shortURL].visits += 1
   const longURL = urlDatabase[req.params.shortURL].longURL;
   res.redirect(longURL);
 });
 
 app.post("/urls", (req, res) => {
   const newKey = generateRandomString();
-  urlDatabase[newKey] = { longURL: req.body.longURL, userId: req.session.user_id, error };
+  urlDatabase[newKey] = {
+    longURL: req.body.longURL,
+    userId: req.session.user_id,
+    date: new Date(Date.now()).toLocaleDateString(),
+    visits: 0
+  };
   const templateVars = { user: users[req.session.user_id], error };
-  if (!users[req.session.user_id]) {
+  if (!req.session.user_id) {
     templateVars.error = "noLogin";
     return res.render("error", templateVars);
   }
@@ -122,7 +110,7 @@ app.post("/urls", (req, res) => {
 
 app.post("/urls/:id", (req, res) => {
   const templateVars = { shortURL: req.params.id, error, user: users[req.session.user_id] };
-  if (!users[req.session.user_id]) {
+  if (!req.session.user_id) {
     templateVars.error = "noLogin";
     return res.render("error", templateVars);
   }
@@ -139,7 +127,7 @@ app.post("/urls/:id", (req, res) => {
 
 app.post("/urls/:shortURL/delete", (req, res) => {
   const templateVars = { shortURL: req.params.shortURL, error, user: users[req.session.user_id] };
-  if (!users[req.session.user_id]) {
+  if (!req.session.user_id) {
     templateVars.error = "noLogin";
     return res.render("error", templateVars);
   }
@@ -177,6 +165,7 @@ app.get("/register", (req, res) => {
 app.post("/login", (req, res) => {
   let user = userExist(req.body.email, users);
   console.log(user);
+  const templateVars = {error, user: users[req.session.user_id]}
   if (!user || !req.body.password) {
     templateVars.error = "incorrect";
     return res.render("error", templateVars);

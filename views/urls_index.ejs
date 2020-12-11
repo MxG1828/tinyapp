@@ -15,31 +15,36 @@
           <tr>
             <th scope="col">Short URL</th>
             <th scope="col">Long URL</th>
+            <th scope="col">Creation date</th>
+            <th scope="col">Total Visits</th>
+            <th scope="col">Unique Visits</th>
             <th scope="col">Edit</th>
             <th scope="col">Delete</th>
           </tr>
         </thead>
         <tbody>
-         
           <% for (let url in urls) { %>
           <tr>
             <td><%= url %></td>
             <td><%= urls[url].longURL %></td>
+            <td><%= urls[url].date%></td>
+            <td><%= urls[url].visits%></td>
+            <td><%= urls[url].uniVisit%></td>
             <td>
               <form method="GET" action="/urls/<%-url %>">
-              <button type="edit" class="btn btn-outline-primary">Edit</button>
+                <button type="edit" class="btn btn-outline-primary">Edit</button>
               </form>
             </td>
             <td>
               <form method="POST" action="/urls/<%-url %>/delete">
-              <button type="Delete" class="btn btn-outline-danger">Delete</button>
+                <button type="Delete" class="btn btn-outline-danger">Delete</button>
               </form>
             </td>
           </tr>
-          <div style="text-align: right;">
+          <% } %>
+          <div style="text-align: right">
             <a href="/urls/new">Create a New Short Link</a>
           </div>
-          <% } %>
         </tbody>
       </table>
     </main>
